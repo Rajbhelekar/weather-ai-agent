@@ -12,6 +12,10 @@ An AI-powered weather assistant built with Python and Ollama. It uses an LLM to 
 - Multi-turn conversations
 - Automated tests using `unittest` and mocked API responses
 
+## 📸 Demo
+
+![Weather AI Agent demo](weather-agent-demo.png)
+
 ## 🛠️ Tech Stack
 
 - Python
