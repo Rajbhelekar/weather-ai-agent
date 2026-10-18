@@ -27,7 +27,7 @@ An AI-powered weather assistant built with Python and Ollama. It uses an LLM to 
 ### 1. Clone the repository
 
 ```bash
-git clone YOUR_GITHUB_REPOSITORY_URL
+git clone https://github.com/Rajbhelekar/weather-ai-agent.git
 cd weather-ai-agent
 ```
 
