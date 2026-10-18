@@ -7,13 +7,18 @@ MODEL = "qwen3:8b"
 SYSTEM_PROMPT = """
 You are a helpful weather assistant.
 Use the get_weather tool for current weather questions.
-Never invent weather data.
-Never invent the city .
-Explain the result clearly and cocisely.
+Never invent weather data or city names.
+If the user does not specify a city, ask for clarification.
+Explain results clearly and concisely.
 """
 
 def get_weather(city: str) -> dict:
     """Get the current weather for a city."""
+
+    if not isinstance(city, str) or not city.strip():
+        return {"error": "Please provide a valid city name."}
+
+    city = city.strip()
 
     geo_url = "https://geocoding-api.open-meteo.com/v1/search"
 
@@ -98,21 +103,33 @@ def run_agent(user_input: str):
             return response.message.content
 
         for tool_call in response.message.tool_calls:
-            if tool_call.function.name == "get_weather":
-                city = tool_call.function.arguments.get("city")
+            tool_name = tool_call.function.name
+            arguments = tool_call.function.arguments or {}
 
-                try:
-                    result = get_weather(city)
-                except (requests.RequestException, KeyError, ValueError) as error:
-                    result = {"error": str(error)}
+            if tool_name != "get_weather":
+                result = {"error": "Unsupported tool."}
 
-                messages.append(
-                    {
-                        "role": "tool",
-                        "name": "get_weather",
-                        "content": json.dumps(result)
-                    }
-                )
+            elif not isinstance(arguments, dict):
+                result = {"error": "Invalid tool arguments."}
+
+            else:
+                city = arguments.get("city")
+
+                if not isinstance(city, str) or not city.strip():
+                    result = {"error": "Please provide a valid city name."}
+                else:
+                    try:
+                        result = get_weather(city)
+                    except (requests.RequestException, KeyError, ValueError) as error:
+                        print(f"Weather tool error: {error}")
+                        result = {"error": "Weather data is temporarily unavailable."}
+
+            messages.append({
+                "role": "tool",
+                "name": tool_name,
+                "content": json.dumps(result)
+            })
+            
     return "I couldn't complete request. Please try again."
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 import requests
 from main import get_weather
 
@@ -30,7 +30,7 @@ class TestWeather(unittest.TestCase):
 
     @patch("main.requests.get")
     def test_successful_weather(self, mock_get):
-        geo_response = unittest.mock.Mock()
+        geo_response = Mock()
         geo_response.json.return_value = {
             "results": [{
                 "name": "Mumbai",
@@ -40,7 +40,7 @@ class TestWeather(unittest.TestCase):
             }]
         }
 
-        weather_response = unittest.mock.Mock()
+        weather_response = Mock()
         weather_response.json.return_value = {
             "current": {
                 "temperature_2m": 32.0,
@@ -60,6 +60,21 @@ class TestWeather(unittest.TestCase):
         self.assertEqual(result["country"], "India")
         self.assertEqual(result["temperature_°C"], 32.0)
         self.assertEqual(result["humidity_percentage_%"], 65)
+
+    def test_empty_city(self):
+        result = get_weather("")
+        self.assertEqual(
+            result,
+            {"error": "Please provide a valid city name."}
+        )
+
+
+    def test_whitespace_city(self):
+        result = get_weather("   ")
+        self.assertEqual(
+            result,
+            {"error": "Please provide a valid city name."}
+        )
 
 
 if __name__ == "__main__":
